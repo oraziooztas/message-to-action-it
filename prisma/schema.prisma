@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Analysis {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Input
+  sourceType  String   // WhatsApp, Email, Altro
+  contextType String   // famiglia, università, lavoro, palestra, vendite, altro
+  personName  String?
+  role        String?  // madre, professore, cliente, ecc.
+  rawText     String
+
+  // Output (JSON stringified)
+  tasksJson    String  // Array of Task objects
+  repliesJson  String  // Object with formale, cordiale, sintetica
+  eventJson    String? // CalendarEvent object or null
+  nextStepJson String  // NextStep object
+}
+
+model Settings {
+  id                    Int     @id @default(1)
+  timezone              String  @default("Europe/Rome")
+  defaultContext        String  @default("altro")
+  defaultTone           String  @default("cordiale")
+  pinHash               String?
+  eventDurationCallMin  Int     @default(30)
+  eventDurationMeetMin  Int     @default(60)
+  llmEnabled            Boolean @default(false)
+  llmProvider           String?
+  llmApiKey             String?
+  notionEnabled         Boolean @default(false)
+  notionToken           String?
+  notionDatabaseId      String?
+}
