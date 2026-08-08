@@ -7,10 +7,15 @@ import { generateTasks } from "./task-generator";
 import { generateReplies } from "./reply-generator";
 import { extractCalendarEvent } from "./event-extractor";
 import { generateNextStep } from "./next-step-generator";
+import { getPrimaryIntent } from "./intent-detector";
+import { callLlmFallback } from "./llm-fallback";
 
 export interface AnalyzerOptions {
   eventDurationCallMin: number;
   eventDurationMeetMin: number;
+  llmEnabled?: boolean;
+  llmProvider?: string | null;
+  llmApiKey?: string | null;
 }
 
 const DEFAULT_OPTIONS: AnalyzerOptions = {
@@ -24,12 +29,31 @@ const DEFAULT_OPTIONS: AnalyzerOptions = {
  * - Three reply variants (formal, cordiale, sintetica)
  * - Calendar event if date/time detected
  * - Next step recommendation
+ * 
+ * Includes an LLM Semantic Fallback if the rule-based intent confidence is too low.
  */
-export function analyzeMessage(
+export async function analyzeMessage(
   input: AnalysisInput,
   options: Partial<AnalyzerOptions> = {}
-): AnalysisResult {
+): Promise<AnalysisResult> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
+
+  // Rule-based intent detection
+  const primaryIntent = getPrimaryIntent(input.rawText);
+  
+  // Semantic Fallback trigger
+  const needsFallback = primaryIntent.confidence < 0.5 || primaryIntent.type === "altro";
+
+  if (needsFallback && opts.llmEnabled && opts.llmApiKey && opts.llmProvider) {
+    try {
+      console.log(`[Analyzer] Rule-based confidence low (${primaryIntent.confidence}). Triggering LLM fallback via ${opts.llmProvider}...`);
+      const llmResult = await callLlmFallback(input, opts);
+      return llmResult;
+    } catch (error) {
+      console.error("[Analyzer] LLM Fallback failed, falling back to rule-based degradation:", error);
+      // If LLM fails, we continue with the graceful rule-based degradation below
+    }
+  }
 
   // Generate tasks
   const tasks = generateTasks({
@@ -80,3 +104,4 @@ export * from "./task-generator";
 export * from "./reply-generator";
 export * from "./event-extractor";
 export * from "./next-step-generator";
+export * from "./llm-fallback";

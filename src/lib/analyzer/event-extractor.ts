@@ -118,7 +118,7 @@ export function extractCalendarEvent(
     return null;
   }
 
-  const primaryDate = dates[0];
+  const primaryDate = dates.find((date) => date.hasTime) ?? dates[0];
   const isCall = isCallEvent(text);
   const duration = isCall ? eventDurationCallMin : eventDurationMeetMin;
 

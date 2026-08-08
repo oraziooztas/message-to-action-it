@@ -73,6 +73,10 @@ const MONTH_MAP: Record<string, number> = {
   dic: 11,
 };
 
+function hasItalianWord(text: string, word: string): boolean {
+  return new RegExp(`(^|\\W)${word}(?=\\W|$)`, "i").test(text);
+}
+
 export interface ParsedDateTime {
   date: Date;
   hasTime: boolean;
@@ -120,8 +124,7 @@ export function parseItalianDate(text: string): ParsedDateTime | null {
   // Weekday names
   if (!result) {
     for (const [dayName, nextDayFn] of Object.entries(DAY_PATTERNS)) {
-      const regex = new RegExp(`\\b${dayName}\\b`, "i");
-      if (regex.test(lowText)) {
+      if (hasItalianWord(lowText, dayName)) {
         result = {
           date: startOfDay(nextDayFn(now)),
           hasTime: false,
@@ -233,7 +236,7 @@ export function extractAllDates(text: string): ParsedDateTime[] {
   const results: ParsedDateTime[] = [];
 
   // Split by common separators and try to parse each segment
-  const segments = text.split(/[,.\n;]/);
+  const segments = text.split(/[,.;!?\n]/);
 
   for (const segment of segments) {
     const parsed = parseItalianDate(segment);

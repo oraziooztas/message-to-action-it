@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const input = validationResult.data;
 
-    // Get settings for event duration
+    // Get settings for event duration and LLM config
     let settings = await prisma.settings.findUnique({ where: { id: 1 } });
     if (!settings) {
       settings = await prisma.settings.create({
@@ -29,10 +29,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Analyze the message
-    const result = analyzeMessage(input, {
+    // Analyze the message (now async with potential LLM fallback)
+    const result = await analyzeMessage(input, {
       eventDurationCallMin: settings.eventDurationCallMin,
       eventDurationMeetMin: settings.eventDurationMeetMin,
+      llmEnabled: settings.llmEnabled,
+      llmProvider: settings.llmProvider,
+      llmApiKey: settings.llmApiKey,
     });
 
     // Save to database

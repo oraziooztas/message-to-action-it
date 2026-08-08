@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const contextType = (body.contextType || analysis.contextType) as ContextType;
     const sourceType = (body.sourceType || analysis.sourceType) as SourceType;
 
-    const newResult = analyzeMessage(
+    const newResult = await analyzeMessage(
       {
         rawText: analysis.rawText,
         sourceType,
@@ -89,6 +89,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       {
         eventDurationCallMin: settings.eventDurationCallMin,
         eventDurationMeetMin: settings.eventDurationMeetMin,
+        llmEnabled: settings.llmEnabled,
+        llmProvider: settings.llmProvider,
+        llmApiKey: settings.llmApiKey,
       }
     );
 
