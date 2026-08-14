@@ -94,8 +94,9 @@ export function detectIntents(text: string): DetectedIntent[] {
     }
 
     if (matchedPatterns.length > 0) {
-      // Normalize confidence to 0-1 range
-      const confidence = Math.min(totalWeight / patterns.length, 1);
+      // A single strong Italian cue ("call", "urgente", "bonifico") should be
+      // enough to drive downstream extraction; cap cumulative matches at 1.
+      const confidence = Math.min(totalWeight, 1);
 
       intents.push({
         type: intentType as IntentType,
