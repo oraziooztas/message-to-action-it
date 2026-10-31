@@ -38,7 +38,7 @@ Natural language processing system that converts Italian-language messages (What
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/message-to-action-it.git
+git clone https://github.com/oraziooztas/message-to-action-it.git
 cd message-to-action-it
 npm install
 ```
